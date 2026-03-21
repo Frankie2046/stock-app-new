@@ -4,6 +4,8 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	template "github.com/gofiber/template/html/v2"
+	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 
 	"project/internal/api"
@@ -11,8 +13,6 @@ import (
 	"project/internal/config"
 	"project/internal/db"
 	"project/pkg/logger"
-
-	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -21,7 +21,8 @@ func main() {
 	}
 
 	cfg := config.Load()
-	app := fiber.New()
+	engine := template.New("./templates", ".html")
+	app := fiber.New(fiber.Config{Views: engine})
 
 	l, err := logger.NewLogger(cfg)
 	if err != nil {
@@ -43,6 +44,7 @@ func main() {
 
 	app.Use(middleware.Logger(l))
 	api.RegisterRoutes(app, l, mysqlDB, cfg)
+
 	l.Info("server start", zap.String("port", cfg.Port))
 	log.Fatal(app.Listen(":" + cfg.Port))
 }

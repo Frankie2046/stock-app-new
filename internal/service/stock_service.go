@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -47,6 +46,11 @@ func (s *StockService) GetStock(id int) (*model.Stock, error) {
 	return stock, nil
 }
 
+func (s *StockService) GetLatestDateStocks() ([]model.Stock, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	return s.repo.ListLatestDateStocks(ctx)
+}
 
 func (s *StockService) SyncSymbol(symbol string) error {
 	symbol = strings.ToUpper(strings.TrimSpace(symbol))
@@ -97,10 +101,10 @@ func (s *StockService) SyncSymbol(symbol string) error {
 
 	stock := model.Stock{
 		Symbol:      symbol,
-		LastClose:   fmt.Sprintf("%.2f", lastClose),
-		High52W:     fmt.Sprintf("%.2f", high52),
-		Low52w:      fmt.Sprintf("%.2f", low52),
-		DiffPercent: fmt.Sprintf("%.2f", diff),
+		LastClose:   lastClose,
+		High52W:     high52,
+		Low52W:      low52,
+		DiffPercent: diff,
 		CurDate:     curDate,
 	}
 

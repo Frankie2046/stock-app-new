@@ -1,27 +1,29 @@
 <!DOCTYPE html>
 <html lang="zh">
-
 <head>
     <meta charset="UTF-8">
-    <title>stock实时监控</title>
+    <title>Stock 实时监控</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 40px;
             background-color: #f8f9fa;
         }
-
         .container {
-            max-width: 900px;
+            max-width: 980px;
             margin: auto;
         }
-
         h2 {
             color: #333;
             border-left: 5px solid #007bff;
             padding-left: 15px;
+            margin-bottom: 8px;
         }
-
+        .sub {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -30,70 +32,74 @@
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-
-        th,
-        td {
+        th, td {
             padding: 15px 20px;
             text-align: left;
         }
-
         th {
             background-color: #007bff;
             color: white;
             text-transform: uppercase;
             font-size: 14px;
         }
-
         tr {
             border-bottom: 1px solid #eee;
         }
-
         tr:last-child {
             border-bottom: none;
         }
-
         .danger {
             background-color: #fff5f5;
             color: #e74c3c;
             font-weight: bold;
         }
-
         .badge {
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 12px;
             background: #eee;
         }
+        .empty {
+            color: #999;
+            text-align: center;
+        }
     </style>
 </head>
-
 <body>
-    <div class="container">
-        <h2>市场监控仪表盘(alpha)<small style="font-size: 0.5em; color: #666;">(数据由 FMP 提供)</small></h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>代码</th>
-                    <th>当前价</th>
-                    <th>52周最高</th>
-                    <th>52周最低</th>
-                    <th>距最高点 (%)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for stock in stocks %}
-                <tr class="{{ 'danger' if stock.diff_percent <= -20 else '' }}">
-                    <td><span class="badge">{{ stock.symbol }}</span></td>
-                    <td>${{ "{:,.2f}".format(stock.last_close) }}</td>
-                    <td>${{ "{:,.2f}".format(stock.high_52w) }}</td>
-                    <td>${{ "{:,.2f}".format(stock.low_52w) }}</td>
-                    <td>{{ stock.diff_percent }}%</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <p style="color: #999; font-size: 12px; margin-top: 10px;">注：背景标红表示价格距52周高点下跌超过 20%（进入技术性熊市）。</p>
-    </div>
-</body>
+<div class="container">
+    <h2>市场监控仪表盘 (AlphaVantage)</h2>
+    <div class="sub">最新数据日期：{{ .Date }}</div>
 
+    <table>
+        <thead>
+        <tr>
+            <th>代码</th>
+            <th>当前价</th>
+            <th>52周最高</th>
+            <th>52周最低</th>
+            <th>距最高点 (%)</th>
+            <th>刷新时间</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{ range .Stocks }}
+        <tr {{ if le .DiffPercent -20.0 }}class="danger"{{ end }}>
+            <td><span class="badge">{{ .Symbol }}</span></td>
+            <td>${{ printf "%.2f" .LastClose }}</td>
+            <td>${{ printf "%.2f" .High52W }}</td>
+            <td>${{ printf "%.2f" .Low52W }}</td>
+            <td>{{ printf "%.2f" .DiffPercent }}%</td>
+            <td>{{ .RefreshTime }}</td>
+        </tr>
+        {{ else }}
+        <tr>
+            <td colspan="6" class="empty">暂无可展示数据，请先执行 /stocks/sync/:symbol</td>
+        </tr>
+        {{ end }}
+        </tbody>
+    </table>
+
+    <p style="color: #999; font-size: 12px; margin-top: 10px;">注：背景标红表示价格距52周高点下跌超过 20%。</p>
+</div>
+</body>
 </html>
