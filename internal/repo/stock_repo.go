@@ -48,10 +48,18 @@ func (r *StockRepo) GetBySymbol(ctx context.Context, symbol string) (*model.Stoc
 
 func (r *StockRepo) ListLatestDateStocks(ctx context.Context) ([]model.Stock, error) {
 	query := `
-SELECT id, symbol, last_close, high_52w, low_52w, percent_diff, DATE_FORMAT(cur_date, '%Y-%m-%d'), DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i:%s')
-FROM stocks
-WHERE cur_date = (SELECT MAX(cur_date) FROM stocks)
-ORDER BY symbol ASC
+	SELECT s.id, s.symbol, s.last_close, s.high_52w, s.low_52w, s.percent_diff,
+		DATE_FORMAT(s.cur_date, '%Y-%m-%d') AS cur_date,
+		DATE_FORMAT(s.updated_at, '%Y-%m-%d %H:%i:%s') AS refresh_time
+	FROM stocks s
+	JOIN (
+	SELECT symbol, MAX(cur_date) AS max_date
+	FROM stocks
+	GROUP BY symbol
+	) t
+	ON s.symbol = t.symbol
+	AND s.cur_date = t.max_date
+	ORDER BY s.symbol,s.updated_at DESC;
 `
 	rows, err := r.db.QueryContext(ctx, query)
 	if err != nil {
