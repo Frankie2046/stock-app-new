@@ -9,22 +9,22 @@ import (
 	"project/internal/service"
 )
 
-type UserHandler struct {
-	service *service.UserService
+type StockHandler struct {
+	service *service.StockService
 	logger  *zap.Logger
 }
 
-func NewUserHandler(service *service.UserService, logger *zap.Logger) *UserHandler {
-	return &UserHandler{
+func NewStockHandler(service *service.StockService, logger *zap.Logger) *StockHandler {
+	return &StockHandler{
 		service: service,
 		logger:  logger,
 	}
 }
 
-func (h *UserHandler) GetUser(c *fiber.Ctx) error {
+func (h *StockHandler) GetStock(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		h.logger.Warn("invalid user id param",
+		h.logger.Warn("invalid stock id param",
 			zap.String("id", c.Params("id")),
 		)
 		return c.Status(400).JSON(fiber.Map{
@@ -32,9 +32,9 @@ func (h *UserHandler) GetUser(c *fiber.Ctx) error {
 		})
 	}
 
-	user, err := h.service.GetUser(id)
+	stock, err := h.service.GetStock(id)
 	if err != nil {
-		h.logger.Warn("get user failed",
+		h.logger.Warn("get stock failed",
 			zap.Int("id", id),
 			zap.Error(err),
 		)
@@ -43,5 +43,5 @@ func (h *UserHandler) GetUser(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.JSON(user)
+	return c.JSON(stock)
 }

@@ -1,6 +1,8 @@
 package api
 
 import (
+	"database/sql"
+
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 
@@ -9,14 +11,14 @@ import (
 	"project/internal/service"
 )
 
-func RegisterRoutes(app *fiber.App, logger *zap.Logger) {
+func RegisterRoutes(app *fiber.App, logger *zap.Logger, mysqlDB *sql.DB) {
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.SendString("ok")
 	})
 
-	userRepo := repo.NewUserRepo()
-	userService := service.NewUserService(userRepo)
-	userHandler := handler.NewUserHandler(userService, logger)
+	stockRepo := repo.NewStockRepo(mysqlDB)
+	stockService := service.NewStockService(stockRepo)
+	stockHandler := handler.NewStockHandler(stockService, logger)
 
-	app.Get("/users/:id", userHandler.GetUser)
+	app.Get("/stocks/:id", stockHandler.GetStock)
 }
