@@ -3,7 +3,7 @@ services:
     image: mysql:8.4
     container_name: stock-mysql
     restart: unless-stopped
-    command: --default-authentication-plugin=mysql_native_password
+    # command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
@@ -15,7 +15,7 @@ services:
       - mysql_data:/var/lib/mysql
       - ./scripts/stock.sql:/docker-entrypoint-initdb.d/01-stock.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${MYSQL_ROOT_PASSWORD}"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${MYSQL_ROOT_PASSWORD}" ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -46,7 +46,7 @@ services:
     ports:
       - "${APP_PORT:-8080}:8080"
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
+      test: [ "CMD", "wget", "-qO-", "http://127.0.0.1:8080/health" ]
       interval: 30s
       timeout: 5s
       retries: 5
