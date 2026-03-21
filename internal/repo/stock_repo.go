@@ -96,3 +96,30 @@ func (r *StockRepo) DeleteBySymbol(ctx context.Context, symbol string) error {
 	}
 	return nil
 }
+
+func (r *StockRepo) UpsertDaily(ctx context.Context, s model.Stock) error {
+	query := `
+	INSERT INTO stocks (
+	symbol, last_close, high_52w, low_52w, percent_diff, is_active, notes, cur_date
+	) VALUES (?, ?, ?, ?, ?, 1, ?, ?)
+	ON DUPLICATE KEY UPDATE
+	last_close = VALUES(last_close),
+	high_52w = VALUES(high_52w),
+	low_52w = VALUES(low_52w),
+	percent_diff = VALUES(percent_diff),
+	notes = VALUES(notes),
+	updated_at = CURRENT_TIMESTAMP
+`
+	_, err := r.db.ExecContext(
+		ctx,
+		query,
+		s.Symbol,
+		s.LastClose,
+		s.High52W,
+		s.Low52w,
+		s.DiffPercent,
+		"AlphaVantage",
+		s.CurDate,
+	)
+	return err
+}

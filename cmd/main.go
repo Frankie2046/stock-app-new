@@ -42,8 +42,7 @@ func main() {
 	defer mysqlDB.Close()
 
 	app.Use(middleware.Logger(l))
-	api.RegisterRoutes(app, l, mysqlDB)
-
+	api.RegisterRoutes(app, l, mysqlDB, cfg)
 	l.Info("server start", zap.String("port", cfg.Port))
 	log.Fatal(app.Listen(":" + cfg.Port))
 }

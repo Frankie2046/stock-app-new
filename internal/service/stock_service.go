@@ -3,18 +3,29 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
+	"project/internal/datasource/alpha_advantage"
 	"project/internal/model"
 	"project/internal/repo"
 )
 
-type StockService struct {
-	repo *repo.StockRepo
+type MarketDataProvider interface {
+	GetWeeklyAdjusted(ctx context.Context, symbol string) ([]alpha_advantage.WeeklyBar, string, error)
 }
 
-func NewStockService(repo *repo.StockRepo) *StockService {
-	return &StockService{repo: repo}
+type StockService struct {
+	repo     *repo.StockRepo
+	provider MarketDataProvider
+}
+
+func NewStockService(repo *repo.StockRepo, provider MarketDataProvider) *StockService {
+	return &StockService{
+		repo:     repo,
+		provider: provider,
+	}
 }
 
 func (s *StockService) GetStock(id int) (*model.Stock, error) {
@@ -34,4 +45,67 @@ func (s *StockService) GetStock(id int) (*model.Stock, error) {
 	}
 
 	return stock, nil
+}
+
+
+func (s *StockService) SyncSymbol(symbol string) error {
+	symbol = strings.ToUpper(strings.TrimSpace(symbol))
+	if symbol == "" {
+		return errors.New("symbol is empty")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	bars, lastRefreshed, err := s.provider.GetWeeklyAdjusted(ctx, symbol)
+	if err != nil {
+		return err
+	}
+	if len(bars) == 0 {
+		return errors.New("no weekly data")
+	}
+
+	n := 52
+	if len(bars) < n {
+		n = len(bars)
+	}
+
+	lastClose := bars[0].AdjustedClose
+	high52 := bars[0].High
+	low52 := bars[0].Low
+
+	for i := 1; i < n; i++ {
+		if bars[i].High > high52 {
+			high52 = bars[i].High
+		}
+		if bars[i].Low < low52 {
+			low52 = bars[i].Low
+		}
+	}
+	if high52 <= 0 {
+		return errors.New("invalid high_52w <= 0")
+	}
+
+	diff := (lastClose - high52) / high52 * 100
+
+	curDate := strings.TrimSpace(lastRefreshed)
+	if len(curDate) >= 10 {
+		curDate = curDate[:10]
+	} else {
+		curDate = bars[0].Date
+	}
+
+	stock := model.Stock{
+		Symbol:      symbol,
+		LastClose:   fmt.Sprintf("%.2f", lastClose),
+		High52W:     fmt.Sprintf("%.2f", high52),
+		Low52w:      fmt.Sprintf("%.2f", low52),
+		DiffPercent: fmt.Sprintf("%.2f", diff),
+		CurDate:     curDate,
+	}
+
+	dbCtx, dbCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer dbCancel()
+
+	return s.repo.UpsertDaily(dbCtx, stock)
 }

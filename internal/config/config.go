@@ -3,14 +3,16 @@ package config
 import "os"
 
 type Config struct {
-	Port       string
-	LogLevel   string
-	AppName    string
-	DBUser     string
-	DBPassword string
-	DBHost     string
-	DBPort     string
-	DBName     string
+	Port         string
+	LogLevel     string
+	AppName      string
+	DBUser       string
+	DBPassword   string
+	DBHost       string
+	DBPort       string
+	DBName       string
+	APIKey       string
+	AlphaBaseURL string
 }
 
 func getEnv(key, def string) string {
@@ -22,13 +24,15 @@ func getEnv(key, def string) string {
 
 func Load() *Config {
 	return &Config{
-		Port:       getEnv("PORT", "8080"),
-		LogLevel:   getEnv("LOG_LEVEL", "info"),
-		AppName:    getEnv("APP_NAME", "stock-app"),
-		DBUser:     getEnv("DB_USER", "root"),
-		DBPassword: getEnv("DB_PASSWORD", ""),
-		DBHost:     getEnv("DB_HOST", "127.0.0.1"),
-		DBPort:     getEnv("DB_PORT", "3306"),
-		DBName:     getEnv("DB_NAME", "stock_app"),
+		Port:         getEnv("PORT", "8080"),
+		LogLevel:     getEnv("LOG_LEVEL", "info"),
+		AppName:      getEnv("APP_NAME", "stock-app"),
+		DBUser:       getEnv("DB_USER", "root"),
+		DBPassword:   getEnv("DB_PASSWORD", ""),
+		DBHost:       getEnv("DB_HOST", "127.0.0.1"),
+		DBPort:       getEnv("DB_PORT", "3306"),
+		DBName:       getEnv("DB_NAME", "stock_app"),
+		APIKey:       getEnv("ALPHA_API_KEY", "test_api_key"),
+		AlphaBaseURL: getEnv("ALPHA_BASE_URL", "https://www.alphavantage.co/query"),
 	}
 }

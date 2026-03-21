@@ -2,6 +2,7 @@ package handler
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
@@ -44,4 +45,31 @@ func (h *StockHandler) GetStock(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(stock)
+}
+
+func (h *StockHandler) SyncSymbol(c *fiber.Ctx) error {
+	symbol := strings.ToUpper(strings.TrimSpace(c.Params("symbol")))
+	if symbol == "" {
+		h.logger.Warn("invalid stock symbol param",
+			zap.String("symbol", c.Params("symbol")),
+		)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid symbol",
+		})
+	}
+
+	if err := h.service.SyncSymbol(symbol); err != nil {
+		h.logger.Warn("sync stock failed",
+			zap.String("symbol", symbol),
+			zap.Error(err),
+		)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"message": "sync success",
+		"symbol":  symbol,
+	})
 }
