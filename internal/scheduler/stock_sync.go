@@ -37,6 +37,15 @@ func StartStockSync(cfg *config.Config, logger *zap.Logger, syncer SymbolSyncer)
 			return
 		}
 		defer running.Store(false)
+		defer func() {
+			if r := recover(); r != nil {
+				logger.Error(
+					"panic recovered in stock sync round",
+					zap.String("trigger", trigger),
+					zap.Any("panic", r),
+				)
+			}
+		}()
 
 		start := time.Now()
 		success := 0

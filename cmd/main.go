@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	template "github.com/gofiber/template/html/v2"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
@@ -59,6 +60,7 @@ func main() {
 		defer cronRunner.Stop()
 	}
 
+	app.Use(recover.New())
 	app.Use(middleware.Logger(l))
 	api.RegisterRoutes(app, l, stockService)
 

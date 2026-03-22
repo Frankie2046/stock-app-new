@@ -18,7 +18,7 @@ services:
       - ./scripts/stock.sql:/docker-entrypoint-initdb.d/01-stock.sql:ro
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${MYSQL_ROOT_PASSWORD}" ]
-      interval: 60s
+      interval: 30s
       timeout: 5s
       retries: 10
     logging:
