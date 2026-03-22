@@ -59,7 +59,7 @@ func (r *StockRepo) ListLatestDateStocks(ctx context.Context) ([]model.Stock, er
 	) t
 	ON s.symbol = t.symbol
 	AND s.cur_date = t.max_date
-	ORDER BY s.symbol,s.updated_at DESC;
+	ORDER BY s.updated_at DESC, s.symbol ASC;
 `
 	rows, err := r.db.QueryContext(ctx, query)
 	if err != nil {
