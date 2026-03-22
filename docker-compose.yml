@@ -46,8 +46,8 @@ services:
       DB_NAME: ${DB_NAME}
       ALPHA_API_KEY: ${ALPHA_API_KEY}
       ALPHA_BASE_URL: ${ALPHA_BASE_URL:-https://www.alphavantage.co/query}
-      SYNC_SYMBOLS: ${SYNC_SYMBOLS:-MSFT,AAPL,META}
-      SYNC_CRON: ${SYNC_CRON:-*/30 * * * *}
+      SYNC_SYMBOLS: ${SYNC_SYMBOLS:-MSFT,AAPL,META,AMZN,TSLA,NVDA,GOOGL,VOO,QQQ}
+      SYNC_CRON: ${SYNC_CRON:-SYNC_CRON=5 6 * * *}
       SYNC_RUN_ON_START: ${SYNC_RUN_ON_START:-true}
     ports:
       - "${APP_PORT:-8080}:8080"
